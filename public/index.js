@@ -1,6 +1,6 @@
 // public/index.js
 const socket = io();
-const password = 'your_password_here';  // Change this to a secure password
+const password = '1234';  // Change this to a secure password
 
 // Authentication
 function login() {
