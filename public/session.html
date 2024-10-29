@@ -7,8 +7,13 @@
 </head>
 <body>
     <h1 id="botUsername">Bot: Loading...</h1>
+    <label class="switch">
+        Anti-AFK:
+        <input type="checkbox" id="antiAfkSwitch" onchange="toggleAntiAfk()">
+        <span class="slider"></span>
+    </label>
     <div id="chatContainer">
-        <div id="chatDisplay"></div>
+        <div id="chatDisplay"></div> <!-- Display in-game messages here -->
         <input type="text" id="chatInput" placeholder="Type a message...">
         <button onclick="sendMessage()">Send</button>
     </div>
@@ -23,17 +28,40 @@
             document.getElementById('botUsername').textContent = `Bot: ${username}`;
         });
 
+        // Receive initial Anti-AFK state from the server
+        socket.on('antiAfkState', (isActive) => {
+            document.getElementById('antiAfkSwitch').checked = isActive;
+        });
+
+        socket.on('chatLogs', (logs) => {
+            const chatDisplay = document.getElementById('chatDisplay');
+            logs.forEach(msg => {
+                const messageElement = document.createElement('div');
+                messageElement.textContent = msg;
+                chatDisplay.appendChild(messageElement);
+            });
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+        });
+
         socket.on('message', (msg) => {
             const chatDisplay = document.getElementById('chatDisplay');
             const messageElement = document.createElement('div');
             messageElement.textContent = msg;
             chatDisplay.appendChild(messageElement);
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
         });
 
         function sendMessage() {
             const chatInput = document.getElementById('chatInput');
             socket.emit('sendMessage', { botId, message: chatInput.value });
             chatInput.value = '';
+        }
+
+        // Toggle Anti-AFK system
+        function toggleAntiAfk() {
+            const antiAfkSwitch = document.getElementById('antiAfkSwitch');
+            const isActive = antiAfkSwitch.checked;
+            socket.emit(isActive ? 'startAntiAfk' : 'stopAntiAfk', botId);
         }
     </script>
 </body>

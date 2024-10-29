@@ -10,6 +10,8 @@ class MinecraftBot {
         this.botId = botId;
         this.io = io;
         this.uptimeStart = Date.now();
+        this.isAntiAfkActive = false; // Track Anti-AFK status
+        this.antiAfkInterval = null; // Store the interval for Anti-AFK movement
         this.initBot();
     }
 
@@ -23,10 +25,10 @@ class MinecraftBot {
 
         this.bot.on('login', () => {
             this.bot.chat(this.connectCommand);
-            this.io.to(this.botId).emit('botUsername', this.username);
+            this.io.to(this.botId).emit('botUsername', this.username); // Send bot username to client
         });
 
-        // Emit in-game messages to the session
+        // Emit in-game chat messages to the session room
         this.bot.on('message', (message) => {
             const msgContent = message.toString();
             this.io.to(this.botId).emit('message', msgContent);
@@ -37,11 +39,41 @@ class MinecraftBot {
         });
     }
 
+    // Start the Anti-AFK system
+    startAntiAfk() {
+        if (this.isAntiAfkActive) return;
+        this.isAntiAfkActive = true;
+
+        this.antiAfkInterval = setInterval(() => {
+            // Toggle movement direction randomly
+            const moveLeft = Math.random() > 0.5;
+            this.bot.setControlState('left', moveLeft);
+            this.bot.setControlState('right', !moveLeft);
+
+            // Stop movement briefly before switching directions again
+            setTimeout(() => {
+                this.bot.setControlState('left', false);
+                this.bot.setControlState('right', false);
+            }, 500);
+        }, 2000); // Adjust interval timing as needed
+    }
+
+    // Stop the Anti-AFK system
+    stopAntiAfk() {
+        if (!this.isAntiAfkActive) return;
+        this.isAntiAfkActive = false;
+
+        clearInterval(this.antiAfkInterval);
+        this.bot.setControlState('left', false);
+        this.bot.setControlState('right', false);
+    }
+
     sendChatMessage(message) {
         this.bot.chat(message);
     }
 
     stop() {
+        this.stopAntiAfk(); // Ensure Anti-AFK is stopped when the bot stops
         this.bot.end();
     }
 }

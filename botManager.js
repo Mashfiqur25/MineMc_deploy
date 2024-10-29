@@ -1,5 +1,5 @@
-const MinecraftBot = require('./minecraftBot');  // Custom bot class for individual bots
-const { v4: uuidv4 } = require('uuid');           // For generating unique bot IDs
+const MinecraftBot = require('./minecraftBot');
+const { v4: uuidv4 } = require('uuid');
 
 class BotManager {
     constructor(io) {
@@ -7,11 +7,9 @@ class BotManager {
         this.bots = {}; // Store each bot instance with its associated data
     }
 
-    // Create a new bot session
     createBot(data, socket) {
         const botId = uuidv4();
         
-        // Initialize the MinecraftBot with unique botId and pass the Socket.io instance
         const bot = new MinecraftBot(
             data.username,
             data.host,
@@ -21,37 +19,40 @@ class BotManager {
             botId,
             this.io
         );
-        
-        // Store bot instance and associated metadata
+
         this.bots[botId] = {
             bot,
             username: data.username,
-            uptimeStart: Date.now() // Record the start time for uptime tracking
+            uptimeStart: Date.now(),
+            chatLogs: [],
+            isAntiAfkActive: false // Track Anti-AFK state for each bot
         };
 
-        // Emit the botCreated event with bot details to the client
+        bot.bot.on('message', (message) => {
+            const msgContent = message.toString();
+            this.bots[botId].chatLogs.push(msgContent);
+        });
+
         const botData = { botId, username: data.username, uptimeStart: this.bots[botId].uptimeStart };
         socket.emit('botCreated', botData);
         return botData;
     }
 
-    // Stop and remove a bot session
+    getChatLogs(botId) {
+        return this.bots[botId]?.chatLogs || [];
+    }
+
     stopBot(botId) {
         if (this.bots[botId]) {
             const botInstance = this.bots[botId].bot;
-
-            // Ensure safe stopping of the bot instance
             if (typeof botInstance.stop === 'function') {
                 botInstance.stop();
             }
-
-            // Remove the bot from active sessions and notify clients
             delete this.bots[botId];
             this.io.emit('botStopped', botId);
         }
     }
 
-    // Send a chat message to a specific bot's in-game chat
     sendMessage(data) {
         const botSession = this.bots[data.botId];
         if (botSession) {
@@ -59,7 +60,22 @@ class BotManager {
         }
     }
 
-    // Retrieve all running sessions for display on the homepage
+    // Start Anti-AFK for a specific bot and save state
+    startAntiAfk(botId) {
+        if (this.bots[botId]) {
+            this.bots[botId].bot.startAntiAfk();
+            this.bots[botId].isAntiAfkActive = true;
+        }
+    }
+
+    // Stop Anti-AFK for a specific bot and save state
+    stopAntiAfk(botId) {
+        if (this.bots[botId]) {
+            this.bots[botId].bot.stopAntiAfk();
+            this.bots[botId].isAntiAfkActive = false;
+        }
+    }
+
     getRunningSessions() {
         return Object.keys(this.bots).map(botId => ({
             botId,
