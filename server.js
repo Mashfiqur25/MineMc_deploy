@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static('public'));
 
 // Password-protected access
-const ACCESS_PASSWORD = "your_password"; // Change this to a secure password
+const ACCESS_PASSWORD = "1234"; // Change this to a secure password
 app.use((req, res, next) => {
     const auth = req.headers['authorization'];
     if (auth === `Bearer ${ACCESS_PASSWORD}`) {
