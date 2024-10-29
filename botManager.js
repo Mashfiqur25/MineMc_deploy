@@ -11,7 +11,7 @@ class BotManager {
         const botId = uuidv4();
         const bot = new MinecraftBot(data.username, data.host, data.port, data.version, data.connectCommand, botId, this.io);
         this.bots[botId] = bot;
-        socket.emit('botCreated', { botId, username: data.username });
+        socket.emit('botCreated', { botId, username: data.username });  // Emit event to confirm bot creation
     }
 
     sendMessage(data) {

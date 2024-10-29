@@ -1,7 +1,19 @@
 // public/index.js
 const socket = io();
-const sessionList = document.getElementById('sessionList');
+const password = 'your_password_here';  // Change this to a secure password
 
+// Authentication
+function login() {
+    const enteredPassword = document.getElementById('password').value;
+    if (enteredPassword === password) {
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+    } else {
+        alert('Incorrect password');
+    }
+}
+
+// Create a new bot session
 function createBot() {
     const data = {
         username: document.getElementById('username').value,
@@ -16,7 +28,7 @@ function createBot() {
 socket.on('botCreated', (data) => {
     const listItem = document.createElement('li');
     listItem.innerHTML = `<a href="/session/${data.botId}">${data.username}</a> - <button onclick="stopBot('${data.botId}')">Stop</button>`;
-    sessionList.appendChild(listItem);
+    document.getElementById('sessionList').appendChild(listItem);
 });
 
 function stopBot(botId) {
