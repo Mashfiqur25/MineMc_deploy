@@ -1,27 +1,40 @@
-<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Minecraft Bot Manager</title>
+    <title>Bot Session</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Minecraft Bot Manager</h1>
-    <div id="sessions">
-        <h2>Active Sessions</h2>
-        <ul id="sessionList"></ul>
-    </div>
-    <div id="newSession">
-        <h2>Create New Session</h2>
-        <input type="text" id="username" placeholder="Username">
-        <input type="text" id="host" placeholder="Server Host">
-        <input type="number" id="port" placeholder="Server Port">
-        <input type="text" id="version" placeholder="Minecraft Version">
-        <input type="text" id="connectCommand" placeholder="Connect Command">
-        <button onclick="createBot()">Start New Bot</button>
+    <h1 id="botUsername">Bot: Loading...</h1>
+    <div id="chatContainer">
+        <div id="chatDisplay"></div>
+        <input type="text" id="chatInput" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
     </div>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="index.js"></script>
+    <script>
+        const socket = io();
+        const botId = window.location.pathname.split('/').pop();
+
+        socket.emit('joinSession', botId);
+
+        socket.on('botUsername', (username) => {
+            document.getElementById('botUsername').textContent = `Bot: ${username}`;
+        });
+
+        socket.on('message', (msg) => {
+            const chatDisplay = document.getElementById('chatDisplay');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = msg;
+            chatDisplay.appendChild(messageElement);
+        });
+
+        function sendMessage() {
+            const chatInput = document.getElementById('chatInput');
+            socket.emit('sendMessage', { botId, message: chatInput.value });
+            chatInput.value = '';
+        }
+    </script>
 </body>
 </html>

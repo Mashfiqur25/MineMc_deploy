@@ -23,17 +23,17 @@ class MinecraftBot {
 
         this.bot.on('login', () => {
             this.bot.chat(this.connectCommand);
-            this.io.to(this.botId).emit('botConnected', this.username);
+            this.io.to(this.botId).emit('botUsername', this.username);
         });
 
+        // Emit in-game messages to the session
         this.bot.on('message', (message) => {
-            const msgContent = message.toAnsi();
+            const msgContent = message.toString();
             this.io.to(this.botId).emit('message', msgContent);
         });
 
         this.bot.on('error', (err) => {
             console.error('Bot error:', err);
-            this.io.to(this.botId).emit('error', err.message);
         });
     }
 
