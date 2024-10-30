@@ -1,4 +1,11 @@
-/* Toggle switch styling */
+/* General Styling */
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Anti-AFK Switch styling */
 .switch {
     display: inline-block;
     position: relative;
@@ -43,4 +50,41 @@ input:checked + .slider {
 
 input:checked + .slider:before {
     transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+/* Chat log with larger square size */
+.chat-log {
+    width: 100%;
+    height: 410px; /* Adjusted for 500px container */
+    background-color: #2c2f33;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: bold;
+    color: #ffffff;
+    overflow-y: auto;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+/* Alternating message bubbles in chat */
+.chat-log div {
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 5px;
+    background-color: #3b3e43;
+}
+
+.chat-log div:nth-child(even) {
+    background-color: #4b4f55;
+}
+
+/* Consistent card styling for Active Sessions */
+.card {
+    background-color: #2c2f33;
+    color: #e0e0e0;
+    border: none;
+    border-radius: 8px;
 }

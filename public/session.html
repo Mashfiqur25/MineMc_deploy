@@ -2,21 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bot Session</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
 </head>
-<body>
-    <h1 id="botUsername">Bot: Loading...</h1>
-    <label class="switch">
-        Anti-AFK:
-        <input type="checkbox" id="antiAfkSwitch" onchange="toggleAntiAfk()">
-        <span class="slider"></span>
-    </label>
-    <div id="chatContainer">
-        <div id="chatDisplay"></div> <!-- Display in-game messages here -->
-        <input type="text" id="chatInput" placeholder="Type a message...">
-        <button onclick="sendMessage()">Send</button>
+<body class="bg-dark text-light" style="font-family: 'Poppins', sans-serif;">
+    <div class="container py-4">
+        <h1 id="botUsername" class="text-center mb-4">Bot: Loading...</h1>
+
+        <div class="text-center mb-4">
+            <label class="switch">
+                Anti-AFK:
+                <input type="checkbox" id="antiAfkSwitch" onchange="toggleAntiAfk()">
+                <span class="slider round"></span>
+            </label>
+        </div>
+
+        <!-- Chat Container with Larger Square Size -->
+        <div id="chatContainer" class="card bg-secondary mx-auto" style="width: 1000px; height: 800px;">
+            <div id="chatDisplay" class="card-body chat-log overflow-auto"></div>
+            <div class="card-footer">
+                <input type="text" id="chatInput" class="form-control" placeholder="Type a message...">
+                <button class="btn btn-primary mt-2 w-100" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
     </div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
@@ -28,11 +41,11 @@
             document.getElementById('botUsername').textContent = `Bot: ${username}`;
         });
 
-        // Receive initial Anti-AFK state from the server
         socket.on('antiAfkState', (isActive) => {
             document.getElementById('antiAfkSwitch').checked = isActive;
         });
 
+        // Load initial chat logs and auto-scroll to the bottom
         socket.on('chatLogs', (logs) => {
             const chatDisplay = document.getElementById('chatDisplay');
             logs.forEach(msg => {
@@ -43,6 +56,7 @@
             chatDisplay.scrollTop = chatDisplay.scrollHeight;
         });
 
+        // Display new incoming messages and auto-scroll to the bottom
         socket.on('message', (msg) => {
             const chatDisplay = document.getElementById('chatDisplay');
             const messageElement = document.createElement('div');
@@ -53,11 +67,12 @@
 
         function sendMessage() {
             const chatInput = document.getElementById('chatInput');
-            socket.emit('sendMessage', { botId, message: chatInput.value });
-            chatInput.value = '';
+            if (chatInput.value.trim() !== "") {
+                socket.emit('sendMessage', { botId, message: chatInput.value });
+                chatInput.value = '';
+            }
         }
 
-        // Toggle Anti-AFK system
         function toggleAntiAfk() {
             const antiAfkSwitch = document.getElementById('antiAfkSwitch');
             const isActive = antiAfkSwitch.checked;
